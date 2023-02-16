@@ -25,9 +25,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".broadcast.NotificationClickHandleBroadCast"
-            android:exported="true">
-        </receiver>
+
 
         <service android:name=".broadcast.MyService"/>
 

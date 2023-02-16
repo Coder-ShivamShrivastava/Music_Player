@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
-import android.view.View
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -23,7 +21,6 @@ class MyService : Service() {
             val localBroadcastManager = LocalBroadcastManager.getInstance(this)
             val localIntent:Intent = Intent("SHIVAM").putExtra("click","playPause")
             localBroadcastManager.sendBroadcast(localIntent)
-
         } else if (intent?.action.equals("next")) {
             val localBroadcastManager = LocalBroadcastManager.getInstance(this)
             val localIntent:Intent = Intent("SHIVAM").putExtra("click","next")
