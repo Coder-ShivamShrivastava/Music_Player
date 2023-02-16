@@ -14,6 +14,7 @@ import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.myapplication.R
+import com.myapplication.broadcast.MyService
 import com.myapplication.model.Song
 import com.myapplication.recyclerAdapter.SongAdapter
 import com.myapplication.repository.Repository
@@ -26,7 +27,7 @@ class MainVM : ViewModel() {
     private val songsList: ArrayList<Song> = ArrayList()
     val adapter by lazy { SongAdapter() }
     private var mediaPlayer: MediaPlayer? = null
-    private lateinit var song:Song
+    private lateinit var song: Song
     private var songPosition = 0
 
 
@@ -35,11 +36,19 @@ class MainVM : ViewModel() {
         override fun onClick(view: View, position: Int, type: String) {
             when (view.id) {
                 R.id.clTop -> {
-                    song=songsList[position]
+                    song = songsList[position]
                     songPosition = position
                     stopSong()
                     playSong(view, song)
-                    showNotification(view, song.displayName)
+                    view.context.startService(
+                        Intent(
+                            view.context,
+                            MyService::class.java
+                        ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra("songName", song.displayName)
+                            .putExtra("isPlay", true)
+                            .setAction("play")
+                    )
                     view.context showToast "Playing ${song.displayName}"
                 }
             }
@@ -52,41 +61,6 @@ class MainVM : ViewModel() {
             mediaPlayer?.stop()
             mediaPlayer?.release()
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun showNotification(view: View, songName: String?,drawable:Int=R.drawable.ic_pause) {
-        val intentNext = Intent("next")
-        val intentPlayPause = Intent("playPause")
-        val intentPrevious = Intent("previous")
-        val pendingIntentNext = PendingIntent.getBroadcast(view.context, 0, intentNext, PendingIntent.FLAG_IMMUTABLE)
-        val pendingIntentPlayPause = PendingIntent.getBroadcast(view.context, 0, intentPlayPause, PendingIntent.FLAG_IMMUTABLE)
-        val pendingIntentPrevious = PendingIntent.getBroadcast(view.context, 0, intentPrevious, PendingIntent.FLAG_IMMUTABLE)
-
-
-        val contentView = RemoteViews(view.context.packageName, R.layout.custom_notification)
-        contentView.setTextViewText(R.id.tvSongName, songName)
-        contentView.setImageViewResource(R.id.ivPause,drawable)
-        contentView.setOnClickPendingIntent(R.id.ivNext, pendingIntentNext)
-        contentView.setOnClickPendingIntent(R.id.ivPause, pendingIntentPlayPause)
-        contentView.setOnClickPendingIntent(R.id.ivPrevious, pendingIntentPrevious)
-
-        val channelid = "Song"
-        val notificationBuilder = Notification.Builder(view.context, channelid)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setCustomBigContentView(contentView)
-            .setOngoing(true)
-
-        val notificationManager = view.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelid, "Channel",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
-        notificationManager.notify(0, notificationBuilder.build())
     }
 
 
@@ -103,35 +77,68 @@ class MainVM : ViewModel() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun playNextSong(view: View) {
-        if (songPosition<(songsList.size-1)) {
+        if (songPosition < (songsList.size - 1)) {
             stopSong()
             songPosition += 1
             song = songsList[songPosition]
             playSong(view, song)
-            showNotification(view, song.displayName)
+            view.context.startService(
+                Intent(
+                    view.context,
+                    MyService::class.java
+                ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra("songName", song.displayName)
+                    .putExtra("isPlay", true)
+                    .setAction("play")
+            )
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun playPreviousSong(view: View) {
-        if (songPosition>0){
+        if (songPosition > 0) {
             stopSong()
             songPosition -= 1
             song = songsList[songPosition]
             playSong(view, song)
-            showNotification(view, song.displayName)
+            view.context.startService(
+                Intent(
+                    view.context,
+                    MyService::class.java
+                ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra("songName", song.displayName)
+                    .putExtra("isPlay", true)
+                    .setAction("play")
+            )
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun playPauseSong(view:View) {
+    fun playPauseSong(view: View) {
         if (mediaPlayer != null) {
             if (mediaPlayer?.isPlaying == true) {
                 mediaPlayer?.pause()
-                showNotification(view,song.displayName,R.drawable.ic_play)
+                view.context.startService(
+                    Intent(
+                        view.context,
+                        MyService::class.java
+                    ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .putExtra("songName", song.displayName)
+                        .putExtra("isPlay", false)
+                        .setAction("play")
+                )
             } else {
                 mediaPlayer?.start()
-                showNotification(view,song.displayName,R.drawable.ic_pause)
+
+                view.context.startService(
+                    Intent(
+                        view.context,
+                        MyService::class.java
+                    ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .putExtra("songName", song.displayName)
+                        .putExtra("isPlay", true)
+                        .setAction("play")
+                )
             }
         }
     }

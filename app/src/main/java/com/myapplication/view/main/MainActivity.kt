@@ -55,7 +55,6 @@ class MainActivity : AppCompatActivity() {
                         viewModel.playPreviousSong(binding.root)
                     }
                 }
-
             }
         }
         // In Local broadcast we can pass custom IntentFilter and make sure same IntentFilter pass from sendBroadcast

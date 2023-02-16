@@ -27,13 +27,9 @@
 
         <receiver android:name=".broadcast.NotificationClickHandleBroadCast"
             android:exported="true">
-            <intent-filter>
-                <action android:name="next"/>
-                <action android:name="playPause"/>
-                <action android:name="previous"/>
-
-            </intent-filter>
         </receiver>
+
+        <service android:name=".broadcast.MyService"/>
 
     </application>
 
